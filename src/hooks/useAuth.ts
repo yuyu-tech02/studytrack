@@ -27,8 +27,17 @@ export const useAuth = () => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin
+        shouldCreateUser: true
       }
+    })
+    return { error }
+  }
+
+  const verifyOtp = async (email: string, token: string) => {
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email'
     })
     return { error }
   }
@@ -42,6 +51,7 @@ export const useAuth = () => {
     user,
     loading,
     signIn,
+    verifyOtp,
     signOut
   }
 }
