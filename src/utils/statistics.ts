@@ -1,5 +1,5 @@
 import { StudySession, DailyStats, SubjectStats, OverallStats } from '@/types'
-import { format, startOfDay, subDays, isAfter, isSameDay, parseISO } from 'date-fns'
+import { format, startOfDay, subDays, isSameDay, parseISO } from 'date-fns'
 
 export const calculateDailyStats = (
   sessions: StudySession[],

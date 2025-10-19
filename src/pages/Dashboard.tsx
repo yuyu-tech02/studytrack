@@ -11,7 +11,7 @@ import {
   calculateSubjectStats,
   calculateOverallStats
 } from '@/utils/statistics'
-import { startOfDay, isToday, parseISO } from 'date-fns'
+import { isToday, parseISO } from 'date-fns'
 
 export const Dashboard = () => {
   const { user, signOut } = useAuth()
