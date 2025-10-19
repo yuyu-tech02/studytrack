@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create vite@latest . -- --template react-ts)",
+      "Bash(npm init -y)",
+      "Bash(npm install vite @vitejs/plugin-react react react-dom)",
+      "Bash(npm install -D typescript @types/react @types/react-dom vite-tsconfig-paths)",
+      "Bash(mkdir -p src/components src/pages src/lib src/types src/hooks src/utils public)",
+      "Bash(tree -L 3 -I \"node_modules\" src)",
+      "Bash(npm uninstall tailwindcss)",
+      "Bash(npm install -D tailwindcss@^3.4.0 postcss@^8.4.0 autoprefixer@^10.4.0)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
