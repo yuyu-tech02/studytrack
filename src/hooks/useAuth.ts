@@ -23,21 +23,21 @@ export const useAuth = () => {
     return () => subscription.unsubscribe()
   }, [])
 
-  const signIn = async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
+  const signUp = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({
       email,
+      password,
       options: {
-        shouldCreateUser: true
+        emailRedirectTo: window.location.origin
       }
     })
     return { error }
   }
 
-  const verifyOtp = async (email: string, token: string) => {
-    const { error } = await supabase.auth.verifyOtp({
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
       email,
-      token,
-      type: 'email'
+      password
     })
     return { error }
   }
@@ -50,8 +50,8 @@ export const useAuth = () => {
   return {
     user,
     loading,
+    signUp,
     signIn,
-    verifyOtp,
     signOut
   }
 }
