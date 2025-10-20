@@ -4,21 +4,37 @@ import toast from 'react-hot-toast'
 
 export const Login = () => {
   const [email, setEmail] = useState('')
+  const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
-  const { signInWithMagicLink } = useAuth()
+  const [codeSent, setCodeSent] = useState(false)
+  const { sendOtp, verifyOtp } = useAuth()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
-    const { error } = await signInWithMagicLink(email)
+    const { error } = await sendOtp(email)
 
     if (error) {
       toast.error('メール送信に失敗しました: ' + error.message)
     } else {
-      setEmailSent(true)
-      toast.success('メールを送信しました！')
+      setCodeSent(true)
+      toast.success('認証コードを送信しました！')
+    }
+
+    setLoading(false)
+  }
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    const { error } = await verifyOtp(email, code)
+
+    if (error) {
+      toast.error('認証に失敗しました: ' + error.message)
+    } else {
+      toast.success('ログイン成功！')
     }
 
     setLoading(false)
@@ -36,24 +52,55 @@ export const Login = () => {
           </p>
         </div>
 
-        {emailSent ? (
-          <div className="text-center space-y-4">
-            <div className="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 px-4 py-3 rounded-lg">
-              <p className="font-medium mb-2">メールを送信しました！</p>
+        {codeSent ? (
+          <form onSubmit={handleVerifyCode} className="space-y-6">
+            <div className="bg-blue-100 dark:bg-blue-900 border border-blue-400 dark:border-blue-600 text-blue-700 dark:text-blue-300 px-4 py-3 rounded-lg mb-4">
               <p className="text-sm">
-                {email} に送信されたリンクをクリックしてログインしてください。
+                {email} に6桁の認証コードを送信しました。
               </p>
             </div>
+
+            <div>
+              <label
+                htmlFor="code"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                認証コード
+              </label>
+              <input
+                id="code"
+                type="text"
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                required
+                maxLength={6}
+                pattern="[0-9]{6}"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent dark:bg-gray-700 dark:text-white transition text-center text-2xl tracking-widest font-mono"
+                placeholder="000000"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || code.length !== 6}
+              className="w-full bg-primary-400 hover:bg-primary-500 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
+            >
+              {loading ? '認証中...' : 'ログイン'}
+            </button>
+
             <button
               type="button"
-              onClick={() => setEmailSent(false)}
-              className="text-primary-400 hover:text-primary-500 font-medium text-sm"
+              onClick={() => {
+                setCodeSent(false)
+                setCode('')
+              }}
+              className="w-full text-primary-400 hover:text-primary-500 font-medium text-sm"
             >
               別のメールアドレスでログイン
             </button>
-          </div>
+          </form>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSendCode} className="space-y-6">
             <div>
               <label
                 htmlFor="email"
@@ -77,11 +124,11 @@ export const Login = () => {
               disabled={loading}
               className="w-full bg-primary-400 hover:bg-primary-500 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
             >
-              {loading ? 'メール送信中...' : 'ログイン / 新規登録'}
+              {loading ? '送信中...' : '認証コードを送信'}
             </button>
 
             <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-              メールアドレスを入力すると、ログインリンクが送信されます。
+              メールアドレスを入力すると、6桁の認証コードが送信されます。
               <br />
               初回の場合は自動的にアカウントが作成されます。
             </p>

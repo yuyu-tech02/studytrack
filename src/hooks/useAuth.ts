@@ -23,13 +23,21 @@ export const useAuth = () => {
     return () => subscription.unsubscribe()
   }, [])
 
-  const signInWithMagicLink = async (email: string) => {
+  const sendOtp = async (email: string) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        shouldCreateUser: true,
-        emailRedirectTo: window.location.origin
+        shouldCreateUser: true
       }
+    })
+    return { error }
+  }
+
+  const verifyOtp = async (email: string, token: string) => {
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email'
     })
     return { error }
   }
@@ -42,7 +50,8 @@ export const useAuth = () => {
   return {
     user,
     loading,
-    signInWithMagicLink,
+    sendOtp,
+    verifyOtp,
     signOut
   }
 }
