@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import toast from 'react-hot-toast'
 
@@ -9,19 +9,40 @@ export const Login = () => {
   const [loading, setLoading] = useState(false)
   const [isSignUp, setIsSignUp] = useState(false)
   const [codeSent, setCodeSent] = useState(false)
+  const [cooldown, setCooldown] = useState(0)
   const { signUp, signIn, verifyOtp } = useAuth()
+
+  useEffect(() => {
+    // クールダウンタイマー
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [cooldown])
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (cooldown > 0) {
+      toast.error(`${cooldown}秒後に再試行してください`)
+      return
+    }
+
     setLoading(true)
 
     const { error } = await signUp(email, password)
 
     if (error) {
-      toast.error('サインアップに失敗しました: ' + error.message)
+      if (error.message.includes('429') || error.message.includes('rate limit')) {
+        toast.error('送信回数が多すぎます。しばらく待ってから再試行してください')
+        setCooldown(60) // 60秒のクールダウン
+      } else {
+        toast.error('サインアップに失敗しました: ' + error.message)
+      }
     } else {
       setCodeSent(true)
       toast.success('認証コードをメールに送信しました！')
+      setCooldown(60) // 成功時もクールダウンを設定
     }
 
     setLoading(false)
@@ -157,10 +178,16 @@ export const Login = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (isSignUp && cooldown > 0)}
               className="w-full bg-primary-400 hover:bg-primary-500 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
             >
-              {loading ? '処理中...' : isSignUp ? '新規登録' : 'ログイン'}
+              {loading
+                ? '処理中...'
+                : isSignUp && cooldown > 0
+                  ? `待機中... (${cooldown}秒)`
+                  : isSignUp
+                    ? '新規登録'
+                    : 'ログイン'}
             </button>
 
             <div className="text-center">
@@ -175,7 +202,9 @@ export const Login = () => {
 
             <p className="text-xs text-center text-gray-500 dark:text-gray-400">
               {isSignUp
-                ? '新規登録後、メールに送信される認証コードを入力してください。'
+                ? cooldown > 0
+                  ? `レート制限のため、${cooldown}秒後に再試行できます。`
+                  : '新規登録後、メールに送信される認証コードを入力してください。'
                 : 'メールアドレスとパスワードでログインできます。'}
             </p>
           </form>
