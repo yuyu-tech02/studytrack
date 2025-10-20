@@ -37,12 +37,15 @@ export const Login = () => {
       if (error.message.includes('429') || error.message.includes('rate limit')) {
         toast.error('送信回数が多すぎます。しばらく待ってから再試行してください')
         setCooldown(60) // 60秒のクールダウン
+      } else if (error.message.includes('User already registered')) {
+        toast.error('このメールアドレスは既に登録されています。ログインしてください。')
       } else {
         toast.error('サインアップに失敗しました: ' + error.message)
+        console.error('SignUp Error:', error)
       }
     } else {
       setCodeSent(true)
-      toast.success('認証コードをメールに送信しました！')
+      toast.success('認証コードをメールに送信しました！メールボックスを確認してください。')
       setCooldown(60) // 成功時もクールダウンを設定
     }
 

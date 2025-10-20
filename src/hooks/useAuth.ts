@@ -24,13 +24,22 @@ export const useAuth = () => {
   }, [])
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin
+        emailRedirectTo: window.location.origin,
+        data: {
+          email_confirm: true
+        }
       }
     })
+
+    // デバッグ用ログ
+    if (data?.user && !data?.session) {
+      console.log('確認メールが送信されました。メールのトークンを入力してください。')
+    }
+
     return { error }
   }
 
