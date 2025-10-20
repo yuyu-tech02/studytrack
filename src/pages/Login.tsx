@@ -31,22 +31,32 @@ export const Login = () => {
 
     setLoading(true)
 
-    const { error } = await signUp(email, password)
+    const result = await signUp(email, password)
 
-    if (error) {
-      if (error.message.includes('429') || error.message.includes('rate limit')) {
+    console.log('SignUp完了:', result)
+
+    if (result.error) {
+      if (result.error.message.includes('429') || result.error.message.includes('rate limit')) {
         toast.error('送信回数が多すぎます。しばらく待ってから再試行してください')
-        setCooldown(60) // 60秒のクールダウン
-      } else if (error.message.includes('User already registered')) {
+        setCooldown(60)
+      } else if (result.error.message.includes('User already registered')) {
         toast.error('このメールアドレスは既に登録されています。ログインしてください。')
       } else {
-        toast.error('サインアップに失敗しました: ' + error.message)
-        console.error('SignUp Error:', error)
+        toast.error('サインアップに失敗しました: ' + result.error.message)
+        console.error('SignUp Error:', result.error)
+      }
+    } else if (result.data?.user) {
+      if (result.data.session) {
+        // メール確認が無効の場合、即座にログイン
+        toast.success('アカウントを作成しました！')
+      } else {
+        // メール確認が必要な場合
+        setCodeSent(true)
+        toast.success(`${email} に認証コードを送信しました！メールを確認してください。`)
+        setCooldown(60)
       }
     } else {
-      setCodeSent(true)
-      toast.success('認証コードをメールに送信しました！メールボックスを確認してください。')
-      setCooldown(60) // 成功時もクールダウンを設定
+      toast.error('予期しないエラーが発生しました')
     }
 
     setLoading(false)

@@ -24,23 +24,34 @@ export const useAuth = () => {
   }, [])
 
   const signUp = async (email: string, password: string) => {
+    console.log('SignUp開始:', email)
+
     const { data, error } = await supabase.auth.signUp({
       email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: {
-          email_confirm: true
-        }
-      }
+      password
+      // options を削除 - OTP方式の場合は不要
     })
 
-    // デバッグ用ログ
-    if (data?.user && !data?.session) {
-      console.log('確認メールが送信されました。メールのトークンを入力してください。')
+    // 詳細なデバッグログ
+    console.log('SignUp結果:', {
+      user: data?.user?.id,
+      email: data?.user?.email,
+      confirmed: data?.user?.confirmed_at,
+      session: !!data?.session,
+      error: error?.message
+    })
+
+    if (error) {
+      console.error('SignUpエラー詳細:', error)
+    } else if (data?.user) {
+      if (data.session) {
+        console.log('即座にログインしました（メール確認不要）')
+      } else {
+        console.log('確認メールが送信されました。メールのOTPコードを入力してください。')
+      }
     }
 
-    return { error }
+    return { data, error }
   }
 
   const verifyOtp = async (email: string, token: string) => {
